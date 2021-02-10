@@ -43,10 +43,23 @@ func createNewProduct(w http.ResponseWriter, r *http.Request) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	var product Product
 	json.Unmarshal(reqBody, &product)
-
 	Products = append(Products, product)
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(product)
+}
+
+func deleteProductByID(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint Hit: deleteProductByID")
+
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	for index, product := range Products {
+		if product.ID == id {
+			Products = append(Products[:index], Products[index+1:]...)
+		}
+	}
 }
 
 // Products is a list of product
