@@ -41,7 +41,12 @@ func createNewProduct(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: createNewProduct")
 
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	fmt.Fprintf(w, "%+v", string(reqBody))
+	var product Product
+	json.Unmarshal(reqBody, &product)
+
+	Products = append(Products, product)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(product)
 }
 
 // Products is a list of product

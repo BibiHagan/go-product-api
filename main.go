@@ -18,7 +18,7 @@ func handleRequests() {
 	myRouter.HandleFunc("/", homePage)
 	myRouter.HandleFunc("/products", returnAllProducts).Methods("GET")
 	myRouter.HandleFunc("/products", createNewProduct).Methods("POST")
-	myRouter.HandleFunc("/products/{id}", returnProductByID)
+	myRouter.HandleFunc("/products/{id}", returnProductByID).Methods("GET")
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }
 
