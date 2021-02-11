@@ -19,7 +19,9 @@ func handleRequests() {
 	myRouter.HandleFunc("/products", returnAllProducts).Methods("GET")
 	myRouter.HandleFunc("/products", createNewProduct).Methods("POST")
 	myRouter.HandleFunc("/products/{id}", returnProductByID).Methods("GET")
+	myRouter.HandleFunc("/products/{id}", updateProductByID).Methods("PUT")
 	myRouter.HandleFunc("/products/{id}", deleteProductByID).Methods("DELETE")
+
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }
 
