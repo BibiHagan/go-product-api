@@ -25,6 +25,7 @@ func handleRequests() {
 	myRouter.HandleFunc("/products/{id}/options", returnOptionsByID).Methods("GET")
 	myRouter.HandleFunc("/products/{id}/options", createNewOption).Methods("POST")
 	myRouter.HandleFunc("/products/{id}/options/{optionId}", returnOptionForProduct).Methods("GET")
+	myRouter.HandleFunc("/products/{id}/options/{optionId}", updateOption).Methods("PUT")
 
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }

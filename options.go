@@ -69,6 +69,7 @@ func createNewOption(w http.ResponseWriter, r *http.Request) {
 		reqBody, _ := ioutil.ReadAll(r.Body)
 		var option Option
 		json.Unmarshal(reqBody, &option)
+
 		Options = append(Options, option)
 
 		for _, option := range Options {
@@ -83,6 +84,36 @@ func createNewOption(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("Product does not exist")
 
 	}
+}
+
+func updateOption(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint Hit: updateOption")
+
+	vars := mux.Vars(r)
+	pkey := vars["id"]
+	okey := vars["optionId"]
+
+	for index, option := range Options {
+		if option.ProductID == pkey {
+			if option.ID == okey {
+				reqBody, _ := ioutil.ReadAll(r.Body)
+				var option Option
+				json.Unmarshal(reqBody, &option)
+				Options[index] = option
+
+			}
+		}
+	}
+
+	var optionsList []Option
+	for _, option := range Options {
+		if option.ProductID == pkey {
+			optionsList = append(optionsList, option)
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(optionsList)
 }
 
 // Options is a list of Option
