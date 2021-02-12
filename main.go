@@ -22,6 +22,8 @@ func handleRequests() {
 	myRouter.HandleFunc("/products/{id}", updateProductByID).Methods("PUT")
 	myRouter.HandleFunc("/products/{id}", deleteProductByID).Methods("DELETE")
 
+	myRouter.HandleFunc("/products/{id}/options", returnOptionsByID).Methods("GET")
+
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }
 
