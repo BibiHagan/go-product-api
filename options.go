@@ -123,12 +123,15 @@ func deleteOption(w http.ResponseWriter, r *http.Request) {
 	pkey := vars["id"]
 	okey := vars["optionId"]
 
-	for index, option := range Options {
+	index := 0
+	for _, option := range Options {
 		if option.ProductID == pkey {
 			if option.ID == okey {
 				Options = append(Options[:index], Options[index+1:]...)
+				index--
 			}
 		}
+		index++
 	}
 }
 

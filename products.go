@@ -106,10 +106,23 @@ func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	for index, product := range Products {
+	prodIndex := 0
+	for _, product := range Products {
 		if product.ID == id {
-			Products = append(Products[:index], Products[index+1:]...)
+			Products = append(Products[:prodIndex], Products[prodIndex+1:]...)
+			prodIndex--
+
+			optIndex := 0
+			for _, option := range Options {
+				if option.ProductID == id {
+					Options = append(Options[:optIndex], Options[optIndex+1:]...)
+					optIndex--
+				}
+				fmt.Println(len(Options))
+				optIndex++
+			}
 		}
+		prodIndex++
 	}
 }
 
