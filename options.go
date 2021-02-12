@@ -116,5 +116,21 @@ func updateOption(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(optionsList)
 }
 
+func deleteOption(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint Hit: deleteOption")
+
+	vars := mux.Vars(r)
+	pkey := vars["id"]
+	okey := vars["optionId"]
+
+	for index, option := range Options {
+		if option.ProductID == pkey {
+			if option.ID == okey {
+				Options = append(Options[:index], Options[index+1:]...)
+			}
+		}
+	}
+}
+
 // Options is a list of Option
 var Options []Option
