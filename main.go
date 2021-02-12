@@ -29,6 +29,7 @@ func handleRequests() {
 
 func main() {
 	fmt.Println("Rest API v2.0 - Mux Routers")
+
 	Products = []Product{
 		{
 			ID:            "1",
@@ -45,5 +46,29 @@ func main() {
 			DeliveryPrice: 12.34,
 		},
 	}
+
+	Options = []Option{
+		{
+			ID:          "1",
+			Name:        "Chocolate Croissant",
+			Description: "Chocolate",
+		},
+		{
+			ID:          "1",
+			Name:        "Croissant",
+			Description: "Plain",
+		},
+		{
+			ID:          "2",
+			Name:        "Chocolate Crunt",
+			Description: "Chocolate flavoured Crunt",
+		},
+		{
+			ID:          "2",
+			Name:        "Apple Crunt",
+			Description: "Apple flavoured Crunt",
+		},
+	}
+
 	handleRequests()
 }
