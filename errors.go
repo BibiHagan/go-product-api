@@ -16,7 +16,7 @@ func returnError(w http.ResponseWriter, code int, description string) {
 	error.Code = code
 	error.Description = description
 
-	w.WriteHeader(code)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(error)
 }
