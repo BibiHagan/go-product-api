@@ -9,6 +9,9 @@ import (
 	"github.com/mux"
 )
 
+// Options is a list of Option
+var Options []Option
+
 // Option contains details
 type Option struct {
 	ID          string `json:"Id"`
@@ -78,11 +81,9 @@ func createNewOption(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(optionsList)
+		json.NewEncoder(w).Encode("Option creation Successful")
 	} else {
-		json.NewEncoder(w).Encode("Product does not exist")
-
+		json.NewEncoder(w).Encode("Product does not exist Otion not created")
 	}
 }
 
@@ -111,9 +112,7 @@ func updateOption(w http.ResponseWriter, r *http.Request) {
 			optionsList = append(optionsList, option)
 		}
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(optionsList)
+	json.NewEncoder(w).Encode("Update of Option Successful")
 }
 
 func deleteOption(w http.ResponseWriter, r *http.Request) {
@@ -133,7 +132,6 @@ func deleteOption(w http.ResponseWriter, r *http.Request) {
 		}
 		index++
 	}
-}
 
-// Options is a list of Option
-var Options []Option
+	json.NewEncoder(w).Encode("Delete of Option Successful")
+}

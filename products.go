@@ -79,8 +79,7 @@ func createNewProduct(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(reqBody, &product)
 	Products = append(Products, product)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(product)
+	json.NewEncoder(w).Encode("Product Create Successful")
 }
 
 func updateProductByID(w http.ResponseWriter, r *http.Request) {
@@ -99,8 +98,7 @@ func updateProductByID(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(Products)
+	json.NewEncoder(w).Encode("Product Update Successful")
 }
 
 func deleteProductByID(w http.ResponseWriter, r *http.Request) {
@@ -113,6 +111,7 @@ func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 	for _, product := range Products {
 		if product.ID == id {
 			Products = append(Products[:prodIndex], Products[prodIndex+1:]...)
+			json.NewEncoder(w).Encode("Product Delete Successful")
 			prodIndex--
 
 			optIndex := 0
@@ -123,6 +122,7 @@ func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 				}
 				optIndex++
 			}
+			json.NewEncoder(w).Encode("Delete of Options Successful")
 		}
 		prodIndex++
 	}
