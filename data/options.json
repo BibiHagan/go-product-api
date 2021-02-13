@@ -1,0 +1,26 @@
+[
+    {
+        "ID": "1",
+        "ProductID": "1",
+        "Name": "Chocolate Croissant",
+        "Description": "Chocolate"
+    },
+    {
+        "ID": "2",
+        "ProductID": "1",
+        "Name": "Croissant",
+        "Description": "Plain"
+    },
+    {
+        "ID": "3",
+        "ProductID": "2",
+        "Name": "Chocolate Crunt",
+        "Description": "Chocolate flavoured Crunt"
+    },
+    {
+        "ID": "4",
+        "ProductID": "2",
+        "Name": "Apple Crunt",
+        "Description": "Apple flavoured Crunt"
+    }
+]

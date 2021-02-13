@@ -10,6 +10,9 @@ import (
 	"github.com/mux"
 )
 
+// Products is a list of product
+var Products []Product
+
 // Product contains details
 type Product struct {
 	ID            string  `json:"Id"`
@@ -118,13 +121,9 @@ func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 					Options = append(Options[:optIndex], Options[optIndex+1:]...)
 					optIndex--
 				}
-				fmt.Println(len(Options))
 				optIndex++
 			}
 		}
 		prodIndex++
 	}
 }
-
-// Products is a list of product
-var Products []Product

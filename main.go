@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/mux"
 )
@@ -34,49 +37,27 @@ func handleRequests() {
 func main() {
 	fmt.Println("Rest API v2.0 - Mux Routers")
 
-	Products = []Product{
-		{
-			ID:            "1",
-			Name:          "Croissant",
-			Description:   "Buttery french pastry",
-			Price:         123.45,
-			DeliveryPrice: 12.34,
-		},
-		{
-			ID:            "2",
-			Name:          "Crunt",
-			Description:   "Croissant vs bundt cake",
-			Price:         678.89,
-			DeliveryPrice: 12.34,
-		},
+	// Open products data file
+	productJsonFile, err := os.Open("data/products.json")
+	if err != nil {
+		fmt.Println(err)
 	}
+	fmt.Println("Successfully Opened products.json")
+	defer productJsonFile.Close()
 
-	Options = []Option{
-		{
-			ID:          "1",
-			ProductID:   "1",
-			Name:        "Chocolate Croissant",
-			Description: "Chocolate",
-		},
-		{
-			ID:          "2",
-			ProductID:   "1",
-			Name:        "Croissant",
-			Description: "Plain",
-		},
-		{
-			ID:          "3",
-			ProductID:   "2",
-			Name:        "Chocolate Crunt",
-			Description: "Chocolate flavoured Crunt",
-		},
-		{
-			ID:          "4",
-			ProductID:   "2",
-			Name:        "Apple Crunt",
-			Description: "Apple flavoured Crunt",
-		},
+	productByteValue, _ := ioutil.ReadAll(productJsonFile)
+	json.Unmarshal(productByteValue, &Products)
+
+	// Open options data file
+	optionsJsonFile, err := os.Open("data/options.json")
+	if err != nil {
+		fmt.Println(err)
 	}
+	fmt.Println("Successfully Opened options.json")
+	defer optionsJsonFile.Close()
+
+	optionsByteValue, _ := ioutil.ReadAll(optionsJsonFile)
+	json.Unmarshal(optionsByteValue, &Options)
 
 	handleRequests()
 }
