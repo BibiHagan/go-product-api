@@ -4,7 +4,7 @@ These are the endpoints:
 
 1. `GET /products` - gets all products.
 2. `GET /products?name={name}` - finds all products matching the specified name.
-3. `GET /products/{id}` - gets the project that matches the specified ID - ID is a GUID.
+3. `GET /products/{id}` - gets the product that matches the specified ID - ID is a GUID.
 4. `POST /products` - creates a new product.
 5. `PUT /products/{id}` - updates a product.
 6. `DELETE /products/{id}` - deletes a product and its options.
@@ -61,3 +61,24 @@ These are the endpoints:
   }
 ]
 ```
+
+## Error Handling:
+
+**Error:**
+```json
+{
+  "Code": "400",
+  "Description": "Bad Request"
+}
+```
+
+**Error List**
+- 400, "Unknown Params"
+- 404, "Product Not Found"
+- 404, "Update Fail: Product Not Found"
+- 404, "Delete Fail: Product Not Found"
+
+- 404, "Option Not Found"
+- 404, "Product does not exist Option not created"
+- 404, "Update error: Option Not Found"
+- 404, "Delete error: Option Not Found"
