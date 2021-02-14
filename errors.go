@@ -8,13 +8,13 @@ import (
 // Error details
 type Error struct {
 	Code        int
-	Description string
+	Description error
 }
 
-func returnError(w http.ResponseWriter, code int, description string) {
+func returnError(w http.ResponseWriter, code int, err error) {
 	var error Error
 	error.Code = code
-	error.Description = description
+	error.Description = err
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
