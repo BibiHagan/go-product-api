@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/mux"
+	"github.com/gorilla/mux"
 )
 
 // Products is a list of product
@@ -24,11 +24,10 @@ type Product struct {
 
 // GET /products - gets all products.
 func returnAllProducts(w http.ResponseWriter, r *http.Request) {
-
 	// Check URL for params
 	u, err := url.Parse(r.RequestURI)
 	if err != nil {
-		panic(err)
+		returnError(w, http.StatusBadRequest, err)
 	}
 	params, _ := url.ParseQuery(u.RawQuery)
 
@@ -40,13 +39,28 @@ func returnAllProducts(w http.ResponseWriter, r *http.Request) {
 			returnProductByName(w, name)
 		} else {
 			// return error message and 400 bad request
-			returnError(w, http.StatusBadRequest, "Unknown Params")
+			//returnError(w, http.StatusBadRequest, "Unknown Params")
 		}
 	} else {
 		// else return ALL products in json format
 		fmt.Println("Endpoint Hit: returnAllProducts")
+		// Create read-only transaction
+		txn := ProdDB.Txn(false)
+		it, err := txn.Get("product", "id")
+		if err != nil {
+			returnError(w, http.StatusBadRequest, err)
+		}
+
+		var products []Product
+		// iterate through the product DB and add ALL objects to Products[]
+		for obj := it.Next(); obj != nil; obj = it.Next() {
+			p := obj.(*Product)
+			products = append(products, *p)
+		}
+
+		// encode as json and return
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Products)
+		json.NewEncoder(w).Encode(products)
 	}
 }
 
@@ -57,46 +71,48 @@ func returnProductByID(w http.ResponseWriter, r *http.Request) {
 	// get {id} from URL
 	vars := mux.Vars(r)
 	key := vars["id"]
-	prodExists := false
 
-	// search through Products[] for {id}
-	for _, product := range Products {
-		if product.ID == key {
-			// If found return product in json format
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(product)
-			prodExists = true
-		}
-	}
+	// Create read-only transaction
+	txn := ProdDB.Txn(false)
+	defer txn.Abort()
 
-	if !prodExists {
+	// search for {id}
+	product, err := txn.First("product", "id", key)
+	if err != nil {
 		// return 404 error product not found
-		returnError(w, http.StatusNotFound, "Product Not Found")
+		returnError(w, http.StatusNotFound, err)
 	}
+
+	// encode as json and return
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(product)
 }
 
 // GET /products?name={name} - finds all products matching the specified name.
 func returnProductByName(w http.ResponseWriter, name string) {
 	fmt.Println("Endpoint Hit: returnProductByName")
 
-	// create new list with product or requested name
-	var prodsList []Product
+	// Create read-only transaction
+	txn := ProdDB.Txn(false)
+	defer txn.Abort()
 
-	// go through All the products and add Product to new list
-	for _, product := range Products {
-		if product.Name == name {
-			prodsList = append(prodsList, product)
-		}
-	}
-
-	// If there are products in the return list
-	if len(prodsList) > 0 {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(prodsList)
-	} else {
+	// get all Products with {name}
+	prodsList, err := txn.Get("product", "name", name)
+	if err != nil {
 		// no products found return error message and 404 not found
-		returnError(w, http.StatusNotFound, "Product Not Found")
+		returnError(w, http.StatusNotFound, err)
 	}
+
+	var products []Product
+	// iterate through the prodList created by query
+	for obj := prodsList.Next(); obj != nil; obj = prodsList.Next() {
+		p := obj.(*Product)
+		products = append(Products, *p)
+	}
+
+	// encode as json and return
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(products)
 }
 
 // POST /products - creates a new product.
@@ -105,13 +121,25 @@ func createNewProduct(w http.ResponseWriter, r *http.Request) {
 
 	// get the new product from the request
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	var product Product
-	// Unmarshal to create a Product and add to Products[]
-	json.Unmarshal(reqBody, &product)
+	var prod Product
+	json.Unmarshal(reqBody, &prod)
 
-	// Todo: if invalid or exists, return 400 bad request
+	product := []*Product{
+		{prod.ID, prod.Name, prod.Description, prod.Price, prod.DeliveryPrice},
+	}
 
-	Products = append(Products, product)
+	// Create a write transaction
+	txn := ProdDB.Txn(true)
+
+	// insert new product in the database
+	for _, p := range product {
+		if err := txn.Insert("product", p); err != nil {
+			returnError(w, http.StatusNotFound, err)
+		}
+	}
+
+	// Commit the transaction
+	txn.Commit()
 }
 
 // PUT /products/{id} - updates a product.
@@ -120,64 +148,60 @@ func updateProductByID(w http.ResponseWriter, r *http.Request) {
 
 	// get product from request
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	// TODO: if invalid, return 400 bad request
 
-	var product Product
+	var prod Product
 	// Unmarshal to create product
-	json.Unmarshal(reqBody, &product)
+	json.Unmarshal(reqBody, &prod)
 
-	// get {id} from URL
-	vars := mux.Vars(r)
-	id := vars["id"]
-	prodExists := false
+	product := []*Product{
+		{prod.ID, prod.Name, prod.Description, prod.Price, prod.DeliveryPrice},
+	}
 
-	// Search through Products[] and overwrite item if found
-	for index, prod := range Products {
-		if prod.ID == id {
-			Products[index] = product
-			prodExists = true
+	// Create a write transaction
+	txn := ProdDB.Txn(true)
+
+	// update product in the database
+	for _, p := range product {
+		if err := txn.Insert("product", p); err != nil {
+			returnError(w, http.StatusNotFound, err)
 		}
 	}
 
-	if !prodExists {
-		// no products found return error message and 404 not found
-		returnError(w, http.StatusNotFound, "Update Fail: Product Not Found")
-	}
+	// Commit the transaction
+	txn.Commit()
 }
 
 // DELETE /products/{id} - deletes a product and its options.
 func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: deleteProductByID")
 
+	// find Product
 	// get {id} from URL
 	vars := mux.Vars(r)
-	id := vars["id"]
-	prodExists := false
+	key := vars["id"]
 
-	// Search Products[] for {id}
-	prodIndex := 0
-	for _, product := range Products {
-		// if found delete it
-		if product.ID == id {
-			Products = append(Products[:prodIndex], Products[prodIndex+1:]...)
-			prodIndex--
-			prodExists = true
+	// Create read-only transaction
+	txn := ProdDB.Txn(false)
+	defer txn.Abort()
 
-			// search through Options[] and delete ALL options for that product
-			optIndex := 0
-			for _, option := range Options {
-				if option.ProductID == id {
-					Options = append(Options[:optIndex], Options[optIndex+1:]...)
-					optIndex--
-				}
-				optIndex++
-			}
-		}
-		prodIndex++
+	// search for {id}
+	product, err := txn.First("product", "id", key)
+	if err != nil {
+		// return 404 error product not found
+		returnError(w, http.StatusNotFound, err)
 	}
 
-	if !prodExists {
-		// no products found return error message and 404 not found
-		returnError(w, http.StatusNotFound, "Delete Fail: Product Not Found")
+	// delete product
+	// Create a write transaction
+	txn = ProdDB.Txn(true)
+
+	// delete product in the database
+	err = txn.Delete("product", product)
+	if err != nil {
+		// return 404 error product not found
+		returnError(w, http.StatusNotFound, err)
 	}
+
+	// Commit the transaction
+	txn.Commit()
 }

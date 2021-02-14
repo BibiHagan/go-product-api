@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/mux"
+	"github.com/gorilla/mux"
 )
 
 // Options is a list of Option
@@ -65,7 +65,7 @@ func returnOptionForProduct(w http.ResponseWriter, r *http.Request) {
 
 	if !optionExists {
 		// return 404 error product not found
-		returnError(w, http.StatusNotFound, "Option Not Found")
+		//returnError(w, http.StatusNotFound, "Option Not Found")
 	}
 }
 
@@ -104,7 +104,7 @@ func createNewOption(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// return 404 error product not found
-		returnError(w, http.StatusNotFound, "Product does not exist Option not created")
+		//returnError(w, http.StatusNotFound, "Product does not exist Option not created")
 	}
 }
 
@@ -137,7 +137,7 @@ func updateOption(w http.ResponseWriter, r *http.Request) {
 
 	if !optionExists {
 		// return 404 error product not found
-		returnError(w, http.StatusNotFound, "Update error: Option Not Found")
+		//returnError(w, http.StatusNotFound, "Update error: Option Not Found")
 	}
 }
 
@@ -165,6 +165,6 @@ func deleteOption(w http.ResponseWriter, r *http.Request) {
 
 	if !optionExists {
 		// return 404 error product not found
-		returnError(w, http.StatusNotFound, "Delete error: Option Not Found")
+		//returnError(w, http.StatusNotFound, "Delete error: Option Not Found")
 	}
 }
