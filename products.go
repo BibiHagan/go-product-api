@@ -10,9 +10,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Products is a list of product
-var Products []Product
-
 // Product contains details
 type Product struct {
 	ID            string  `json:"Id"`
@@ -27,7 +24,7 @@ func returnAllProducts(w http.ResponseWriter, r *http.Request) {
 	// Check URL for params
 	u, err := url.Parse(r.RequestURI)
 	if err != nil {
-		returnError(w, http.StatusBadRequest, err)
+		returnError(w, http.StatusBadRequest, err.Error())
 	}
 	params, _ := url.ParseQuery(u.RawQuery)
 
@@ -48,7 +45,7 @@ func returnAllProducts(w http.ResponseWriter, r *http.Request) {
 		txn := ProdDB.Txn(false)
 		it, err := txn.Get("product", "id")
 		if err != nil {
-			returnError(w, http.StatusBadRequest, err)
+			returnError(w, http.StatusBadRequest, err.Error())
 		}
 
 		var products []Product
@@ -80,7 +77,7 @@ func returnProductByID(w http.ResponseWriter, r *http.Request) {
 	product, err := txn.First("product", "id", key)
 	if err != nil {
 		// return 404 error product not found
-		returnError(w, http.StatusNotFound, err)
+		returnError(w, http.StatusNotFound, err.Error())
 	}
 
 	// encode as json and return
@@ -100,14 +97,14 @@ func returnProductByName(w http.ResponseWriter, name string) {
 	prodsList, err := txn.Get("product", "name", name)
 	if err != nil {
 		// no products found return error message and 404 not found
-		returnError(w, http.StatusNotFound, err)
+		returnError(w, http.StatusNotFound, err.Error())
 	}
 
 	var products []Product
 	// iterate through the prodList created by query
 	for obj := prodsList.Next(); obj != nil; obj = prodsList.Next() {
 		p := obj.(*Product)
-		products = append(Products, *p)
+		products = append(products, *p)
 	}
 
 	// encode as json and return
@@ -134,7 +131,7 @@ func createNewProduct(w http.ResponseWriter, r *http.Request) {
 	// insert new product in the database
 	for _, p := range product {
 		if err := txn.Insert("product", p); err != nil {
-			returnError(w, http.StatusNotFound, err)
+			returnError(w, http.StatusNotFound, err.Error())
 		}
 	}
 
@@ -163,7 +160,7 @@ func updateProductByID(w http.ResponseWriter, r *http.Request) {
 	// update product in the database
 	for _, p := range product {
 		if err := txn.Insert("product", p); err != nil {
-			returnError(w, http.StatusNotFound, err)
+			returnError(w, http.StatusNotFound, err.Error())
 		}
 	}
 
@@ -188,7 +185,7 @@ func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 	product, err := txn.First("product", "id", key)
 	if err != nil {
 		// return 404 error product not found
-		returnError(w, http.StatusNotFound, err)
+		returnError(w, http.StatusNotFound, err.Error())
 	}
 
 	// delete product
@@ -199,7 +196,37 @@ func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 	err = txn.Delete("product", product)
 	if err != nil {
 		// return 404 error product not found
-		returnError(w, http.StatusNotFound, err)
+		returnError(w, http.StatusNotFound, err.Error())
+	}
+
+	// Commit the transaction
+	txn.Commit()
+
+	// delete all options for productId
+	// Create read-only transaction
+	txn = OptDB.Txn(false)
+	defer txn.Abort()
+
+	// get all of the options for product {id}
+	it, err := txn.Get("option", "productId", key)
+	if err != nil {
+		returnError(w, http.StatusBadRequest, err.Error())
+	}
+
+	// delete Options
+	// Create a write transaction
+	txn = OptDB.Txn(true)
+
+	// iterate through the product DB and delete options
+	for obj := it.Next(); obj != nil; obj = it.Next() {
+		o := obj.(*Option)
+		if o.ProductID == key {
+			err = txn.Delete("option", o)
+			if err != nil {
+				// return 404 error product not found
+				returnError(w, http.StatusNotFound, err.Error())
+			}
+		}
 	}
 
 	// Commit the transaction

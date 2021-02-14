@@ -8,10 +8,10 @@ import (
 // Error details
 type Error struct {
 	Code        int
-	Description error
+	Description string
 }
 
-func returnError(w http.ResponseWriter, code int, err error) {
+func returnError(w http.ResponseWriter, code int, err string) {
 	var error Error
 	error.Code = code
 	error.Description = err
