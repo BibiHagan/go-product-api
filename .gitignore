@@ -15,3 +15,6 @@
 # vendor/
 
 __debug_bin
+
+# other
+.DS_Store
