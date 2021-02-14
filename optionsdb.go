@@ -39,13 +39,13 @@ func createOptionsDatabase() *memdb.MemDB {
 	}
 
 	// Create a new product data base
-	optdb, err := memdb.NewMemDB(optionSchema)
+	OptDB, err := memdb.NewMemDB(optionSchema)
 	if err != nil {
 		panic(err)
 	}
 
 	// Create a write transaction
-	txn := optdb.Txn(true)
+	txn := OptDB.Txn(true)
 
 	// Insert some products
 	Options := []*Option{
@@ -54,8 +54,8 @@ func createOptionsDatabase() *memdb.MemDB {
 		{"3", "2", "Chocolate Crunt", "Chocolate flavoured Crunt"},
 		{"4", "2", "Apple Crunt", "Apple flavoured Crunt"},
 	}
-	for _, p := range Options {
-		if err := txn.Insert("option", p); err != nil {
+	for _, o := range Options {
+		if err := txn.Insert("option", o); err != nil {
 			panic(err)
 		}
 	}

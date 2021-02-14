@@ -9,8 +9,10 @@ import (
 	"github.com/hashicorp/go-memdb"
 )
 
-// global
+// ProdDB points to the Product Database
 var ProdDB *memdb.MemDB
+
+// OptDB points to the Options Database
 var OptDB *memdb.MemDB
 
 func main() {
@@ -18,11 +20,11 @@ func main() {
 
 	// create DB
 	ProdDB = createProductsDatabase()
-
 	OptDB = createOptionsDatabase()
 
 	handleRequests()
 }
+
 func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the HomePage!")
 	fmt.Println("Endpoint Hit: homePage")
