@@ -139,7 +139,8 @@ func getAllOptions(w http.ResponseWriter, index, key string) []Option {
 	var err error
 	it, err = txn.Get("option", index, key)
 	if err != nil {
-		returnError(w, http.StatusBadRequest, err.Error())
+		// return DB error
+		returnError(w, http.StatusInternalServerError, err.Error())
 	}
 
 	// iterate through the option DB and add ALL options
@@ -181,8 +182,8 @@ func deleteOptionFromDB(w http.ResponseWriter, txn *memdb.Txn, option interface{
 	// delete option in the database
 	err := txn.Delete("option", option)
 	if err != nil {
-		// return 404 error product not found
-		returnError(w, http.StatusNotFound, err.Error())
+		// return DB error
+		returnError(w, http.StatusInternalServerError, err.Error())
 		errs = true
 	}
 

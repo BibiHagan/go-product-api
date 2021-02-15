@@ -88,8 +88,7 @@ func updateProductByID(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: updateProduct")
 
 	// get {productId} from URL
-	vars := mux.Vars(r)
-	pkey := vars["productId"]
+	pkey := mux.Vars(r)["productId"]
 
 	// check Product exists
 	prodExist := getSingleProduct(w, "id", pkey)
@@ -122,8 +121,8 @@ func getSingleProduct(w http.ResponseWriter, index, pkey string) interface{} {
 	// search for {productId}
 	product, err := txn.First("product", index, pkey)
 	if err != nil {
-		// return 404 error product not found
-		returnError(w, http.StatusNotFound, err.Error())
+		// return DB error
+		returnError(w, http.StatusInternalServerError, err.Error())
 	}
 
 	return product
@@ -150,6 +149,7 @@ func getAllProducts(w http.ResponseWriter, index, pkey string) []Product {
 			products = append(products, *p)
 		}
 	} else {
+		// return DB error
 		returnError(w, http.StatusInternalServerError, err.Error())
 	}
 
@@ -173,6 +173,7 @@ func writeProductToDB(w http.ResponseWriter, r *http.Request) {
 	// insert new product in the database
 	for _, p := range product {
 		if err := txn.Insert("product", p); err != nil {
+			// return DB error
 			returnError(w, http.StatusInternalServerError, err.Error())
 		}
 	}
@@ -197,8 +198,8 @@ func deleteProduct(w http.ResponseWriter, product interface{}, pkey string) {
 		// delete product in the database
 		err := txn.Delete("product", product)
 		if err != nil {
-			// return 404 error product not found
-			returnError(w, http.StatusNotFound, err.Error())
+			// return DB error
+			returnError(w, http.StatusInternalServerError, err.Error())
 		}
 
 		// Commit the transaction
