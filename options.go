@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/hashicorp/go-memdb"
 )
 
 // Option contains details
@@ -25,21 +26,8 @@ func returnOptionsByProductID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["id"]
 
-	// Create read-only transaction
-	txn := OptDB.Txn(false)
-	defer txn.Abort()
-
-	it, err := txn.Get("option", "productId", key)
-	if err != nil {
-		returnError(w, http.StatusBadRequest, err.Error())
-	}
-
-	var options []Option
-	// iterate through the product DB and add ALL objects to Options[]
-	for obj := it.Next(); obj != nil; obj = it.Next() {
-		o := obj.(*Option)
-		options = append(options, *o)
-	}
+	// get all the options for product {id}
+	options := getAllOptions(w, "productId", key)
 
 	// encode as json and return
 	w.Header().Set("Content-Type", "application/json")
@@ -55,55 +43,18 @@ func returnOptionForProduct(w http.ResponseWriter, r *http.Request) {
 	pkey := vars["id"]
 	okey := vars["optionId"]
 
-	// Create read-only transaction
-	txn := OptDB.Txn(false)
-	defer txn.Abort()
-
-	// get all of the options for product {id}
-	it, err := txn.Get("option", "productId", pkey)
-	if err != nil {
-		returnError(w, http.StatusBadRequest, err.Error())
-	}
-
-	var options []Option
-	// iterate through the product DB and add options with {optionId}
-	for obj := it.Next(); obj != nil; obj = it.Next() {
-		o := obj.(*Option)
-		if o.ID == okey {
-			options = append(options, *o)
-		}
-	}
+	option := getSingleOption(w, pkey, okey)
 
 	// encode as json and return
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(options)
+	json.NewEncoder(w).Encode(option)
 }
 
 // POST /products/{id}/options - adds a new product option to the specified product.
 func createNewOption(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: createNewOption")
 
-	// get the new option from the request
-	reqBody, _ := ioutil.ReadAll(r.Body)
-	var opt Option
-	json.Unmarshal(reqBody, &opt)
-
-	option := []*Option{
-		{opt.ID, opt.ProductID, opt.Name, opt.Description},
-	}
-
-	// Create a write Transaction
-	txn := OptDB.Txn(true)
-
-	// insert new Option in the database
-	for _, o := range option {
-		if err := txn.Insert("option", o); err != nil {
-			returnError(w, http.StatusNotFound, err.Error())
-		}
-	}
-
-	// Commit the transaction
-	txn.Commit()
+	writeOptionToDB(w, r)
 }
 
 // PUT /products/{id}/options/{optionId} - updates the specified product option.
@@ -115,50 +66,11 @@ func updateOption(w http.ResponseWriter, r *http.Request) {
 	pkey := vars["id"]
 	okey := vars["optionId"]
 
-	// Create read-only transaction
-	txn := OptDB.Txn(false)
-	defer txn.Abort()
+	// check Option exists
+	option := getSingleOption(w, pkey, okey)
 
-	// get all options for product {id}
-	it, err := txn.Get("option", "productId", pkey)
-	if err != nil {
-		returnError(w, http.StatusBadRequest, err.Error())
-	}
-
-	var options []Option
-	// iterate through the product DB and add objects with {optionId}
-	for obj := it.Next(); obj != nil; obj = it.Next() {
-		o := obj.(*Option)
-		if o.ID == okey {
-			options = append(options, *o)
-		}
-	}
-
-	// get new option from request
-	reqBody, _ := ioutil.ReadAll(r.Body)
-
-	var opt Option
-	// Unmarshal to create option
-	json.Unmarshal(reqBody, &opt)
-
-	option := []*Option{
-		{opt.ID, opt.ProductID, opt.Name, opt.Description},
-	}
-
-	// check that the optionID is the same before update
-	if options[0].ID == option[0].ID {
-		// Create a write Transaction
-		txn = OptDB.Txn(true)
-
-		// update option in the database
-		for _, o := range option {
-			if err := txn.Insert("option", o); err != nil {
-				returnError(w, http.StatusNotFound, err.Error())
-			}
-		}
-
-		// Commit the transaction
-		txn.Commit()
+	if option != nil {
+		writeOptionToDB(w, r)
 	} else {
 		returnError(w, http.StatusNotFound, "Update Fail: Product Option Not Found")
 	}
@@ -173,36 +85,99 @@ func deleteOption(w http.ResponseWriter, r *http.Request) {
 	pkey := vars["id"]
 	okey := vars["optionId"]
 
+	// check Option exists
+	option := getSingleOption(w, pkey, okey)
+
+	// delete Option
+	deleteOptionFromDB(w, option)
+}
+
+func getSingleOption(w http.ResponseWriter, pkey, okey string) interface{} {
 	// Create read-only transaction
 	txn := OptDB.Txn(false)
 	defer txn.Abort()
 
-	// get all options for product {id}
+	// search for the options for product {id}
 	it, err := txn.Get("option", "productId", pkey)
-	if err != nil {
-		returnError(w, http.StatusBadRequest, err.Error())
-	}
-
-	var options []Option
-	// iterate through the product DB and add objects with {optionId}
-	for obj := it.Next(); obj != nil; obj = it.Next() {
-		o := obj.(*Option)
-		if o.ID == okey {
-			options = append(options, *o)
-		}
-	}
-
-	// delete option
-	// Create a write transaction
-	txn = OptDB.Txn(true)
-
-	// delete product in the database
-	err = txn.Delete("option", options[0])
 	if err != nil {
 		// return 404 error product not found
 		returnError(w, http.StatusNotFound, err.Error())
 	}
 
+	var option []Option
+	// iterate through the Options returned and add the option with {optionId}
+	for obj := it.Next(); obj != nil; obj = it.Next() {
+		o := obj.(*Option)
+		if o.ID == okey {
+			option = append(option, *o)
+		}
+	}
+
+	return option
+}
+
+func getAllOptions(w http.ResponseWriter, index, key string) []Option {
+
+	var options []Option
+	var it memdb.ResultIterator
+	var err error
+
+	// Create read-only transaction
+	txn := OptDB.Txn(false)
+
+	it, err = txn.Get("option", index, key)
+	if err != nil {
+		returnError(w, http.StatusBadRequest, err.Error())
+	}
+
+	// iterate through the option DB and add ALL options
+	for obj := it.Next(); obj != nil; obj = it.Next() {
+		o := obj.(*Option)
+		options = append(options, *o)
+	}
+
+	return options
+}
+
+func writeOptionToDB(w http.ResponseWriter, r *http.Request) {
+	// get the new option from the request
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	var opt Option
+	json.Unmarshal(reqBody, &opt)
+
+	option := []*Option{
+		{opt.ID, opt.ProductID, opt.Name, opt.Description},
+	}
+
+	// Create a write transaction
+	txn := OptDB.Txn(true)
+
+	// insert new product in the database
+	for _, p := range option {
+		if err := txn.Insert("option", p); err != nil {
+			returnError(w, http.StatusNotFound, err.Error())
+		}
+	}
+
 	// Commit the transaction
 	txn.Commit()
+}
+
+func deleteOptionFromDB(w http.ResponseWriter, option interface{}) {
+	if option != nil {
+		// Create a write transaction
+		txn := OptDB.Txn(true)
+
+		// delete option in the database
+		err := txn.Delete("option", option)
+		if err != nil {
+			// return 404 error product not found
+			returnError(w, http.StatusNotFound, err.Error())
+		}
+
+		// Commit the transaction
+		txn.Commit()
+	} else {
+		returnError(w, http.StatusNotFound, "Delete Fail: Option not found")
+	}
 }

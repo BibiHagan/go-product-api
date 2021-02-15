@@ -74,16 +74,7 @@ func returnProductByID(w http.ResponseWriter, r *http.Request) {
 func createNewProduct(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: createNewProduct")
 
-	// get the new product from the request
-	reqBody, _ := ioutil.ReadAll(r.Body)
-	var prod Product
-	json.Unmarshal(reqBody, &prod)
-
-	product := []*Product{
-		{prod.ID, prod.Name, prod.Description, prod.Price, prod.DeliveryPrice},
-	}
-
-	writeProductToDB(w, product)
+	writeProductToDB(w, r)
 }
 
 // PUT /products/{id} - updates a product.
@@ -97,17 +88,7 @@ func updateProductByID(w http.ResponseWriter, r *http.Request) {
 	// check Product exists
 	prodExist := getSingleProduct(w, "id", key)
 	if prodExist != nil {
-		// get product from request
-		reqBody, _ := ioutil.ReadAll(r.Body)
-
-		var prod Product
-		// Unmarshal to create product
-		json.Unmarshal(reqBody, &prod)
-		product := []*Product{
-			{prod.ID, prod.Name, prod.Description, prod.Price, prod.DeliveryPrice},
-		}
-
-		writeProductToDB(w, product)
+		writeProductToDB(w, r)
 
 	} else {
 		returnError(w, http.StatusNotFound, "Update Fail: Product not found")
@@ -123,6 +104,7 @@ func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["id"]
 
+	// find the product to delete
 	product := getSingleProduct(w, "id", key)
 
 	// delete product
@@ -193,7 +175,7 @@ func getAllProducts(w http.ResponseWriter, index, key string) []Product {
 		returnError(w, http.StatusBadRequest, err.Error())
 	}
 
-	// iterate through the product DB and add ALL objects to Products[]
+	// iterate through the product DB and add ALL objects
 	for obj := it.Next(); obj != nil; obj = it.Next() {
 		p := obj.(*Product)
 		products = append(products, *p)
@@ -202,7 +184,17 @@ func getAllProducts(w http.ResponseWriter, index, key string) []Product {
 	return products
 }
 
-func writeProductToDB(w http.ResponseWriter, product []*Product) {
+func writeProductToDB(w http.ResponseWriter, r *http.Request) {
+	// get product from request
+	reqBody, _ := ioutil.ReadAll(r.Body)
+
+	var prod Product
+	// Unmarshal to create product
+	json.Unmarshal(reqBody, &prod)
+	product := []*Product{
+		{prod.ID, prod.Name, prod.Description, prod.Price, prod.DeliveryPrice},
+	}
+
 	// Create a write transaction
 	txn := ProdDB.Txn(true)
 
