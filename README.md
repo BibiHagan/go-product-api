@@ -72,18 +72,21 @@ These are the endpoints:
 }
 ```
 
-**Error List**
-- 400, "Unknown Params"
-- 404, "Product Not Found"
-- 404, "Update Fail: Product Not Found"
-- 404, "Delete Fail: Product Not Found"
-
-- 404, "Option Not Found"
-- 404, "Product does not exist Option not created"
-- 404, "Update error: Option Not Found"
-- 404, "Delete error: Option Not Found"
-
 # How to Install
+
+    > go install 
+- usage: go install [-i] [build flags] [packages]
+
+compiles and installs the packages name by the import paths.
+The -i flag installs the dependencies of the named packages as well
+   
+    > go build -i 
+- usage: go build [-o output] [-i] [build flags] [packages]
+
+Build compiles the packages named by the import paths,
+along with their dependencies, but it does not install the results 
+The -i flag installs the packages that are dependencies
+    
 
 # How to Run app
 

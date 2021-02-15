@@ -29,6 +29,7 @@
     - [x] gets all products.
     - [x] Use Postman to Test
     - [x] Update documentation
+    NOTE: productId was left single digit for the ease of testing
 
 ### GET /products?name={name}
     - [x] finds all products matching the specified name.
@@ -62,6 +63,8 @@
     - [x] Update documentation
     Questions:
     - Can a product exist with no Options?
+    NOTE: 
+    - productId was left single digit for the ease of testing
 
 ### GET /products/{productId}/options/{optionId}
     - [x] finds the specified product option for the specified product.
@@ -102,6 +105,6 @@
 
 ### Write Tests
     - [-] write unit tests
-    - [ ] Save Postman events
+    - [x] Save Postman events
     - [ ] run tests
     - [ ] update documentation

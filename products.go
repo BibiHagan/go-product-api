@@ -186,6 +186,14 @@ func deleteProduct(w http.ResponseWriter, product interface{}, pkey string) {
 		// Create a write transaction
 		txn := Database.Txn(true)
 
+		// Get all options for productId
+		options := getAllOptions(w, "productId", pkey)
+
+		// Delete all options[]
+		for _, opt := range options {
+			deleteOptionFromDB(w, txn, opt)
+		}
+
 		// delete product in the database
 		err := txn.Delete("product", product)
 		if err != nil {
@@ -196,15 +204,14 @@ func deleteProduct(w http.ResponseWriter, product interface{}, pkey string) {
 		// Commit the transaction
 		txn.Commit()
 
-		// Get all options for productId
-		options := getAllOptions(w, "id", pkey)
-
-		// Delete all options[]
-		for _, opt := range options {
-			deleteOptionFromDB(w, opt)
-		}
-
 	} else {
 		returnError(w, http.StatusNotFound, "Delete Fail: Product not found")
 	}
+}
+
+// Encode sets the header and encode to JSON
+func Encode(w http.ResponseWriter, product interface{}) {
+	// encode as json and return
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(product)
 }

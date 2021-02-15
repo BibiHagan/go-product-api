@@ -91,8 +91,20 @@ func deleteOption(w http.ResponseWriter, r *http.Request) {
 	// check Option exists
 	option := getSingleOption(w, pkey, okey)
 
-	// delete Option
-	deleteOptionFromDB(w, option)
+	if option != nil {
+		// Create a write transaction
+		txn := Database.Txn(true)
+
+		// delete Option
+		if !deleteOptionFromDB(w, txn, option) {
+			// Commit the transaction
+			txn.Commit()
+		}
+
+	} else {
+		returnError(w, http.StatusNotFound, "Delete Fail: Option not found")
+	}
+
 }
 
 func getSingleOption(w http.ResponseWriter, pkey, okey string) interface{} {
@@ -119,7 +131,6 @@ func getSingleOption(w http.ResponseWriter, pkey, okey string) interface{} {
 }
 
 func getAllOptions(w http.ResponseWriter, index, key string) []Option {
-
 	// Create read-only transaction
 	txn := Database.Txn(false)
 	defer txn.Abort()
@@ -165,21 +176,15 @@ func writeOptionToDB(w http.ResponseWriter, r *http.Request) {
 	txn.Commit()
 }
 
-func deleteOptionFromDB(w http.ResponseWriter, option interface{}) {
-	if option != nil {
-		// Create a write transaction
-		txn := Database.Txn(true)
-
-		// delete option in the database
-		err := txn.Delete("option", option)
-		if err != nil {
-			// return 404 error product not found
-			returnError(w, http.StatusNotFound, err.Error())
-		}
-
-		// Commit the transaction
-		txn.Commit()
-	} else {
-		returnError(w, http.StatusNotFound, "Delete Fail: Option not found")
+func deleteOptionFromDB(w http.ResponseWriter, txn *memdb.Txn, option interface{}) bool {
+	errs := false
+	// delete option in the database
+	err := txn.Delete("option", option)
+	if err != nil {
+		// return 404 error product not found
+		returnError(w, http.StatusNotFound, err.Error())
+		errs = true
 	}
+
+	return errs
 }
