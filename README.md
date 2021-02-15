@@ -62,7 +62,7 @@ These are the endpoints:
 ]
 ```
 
-## Error Handling:
+# Error Handling:
 
 **Error:**
 ```json
@@ -82,3 +82,15 @@ These are the endpoints:
 - 404, "Product does not exist Option not created"
 - 404, "Update error: Option Not Found"
 - 404, "Delete error: Option Not Found"
+
+# How to Install
+
+# How to Run app
+
+To start the webserver:
+
+    > go run .
+
+# How to Run tests
+
+    > go test -v

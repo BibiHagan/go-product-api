@@ -25,14 +25,8 @@ func main() {
 	handleRequests()
 }
 
-func homePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the HomePage!")
-	fmt.Println("Endpoint Hit: homePage")
-}
-
 func handleRequests() {
 	myRouter := mux.NewRouter()
-	myRouter.HandleFunc("/", homePage)
 	myRouter.HandleFunc("/products", returnAllProducts).Methods("GET")
 	myRouter.HandleFunc("/products", createNewProduct).Methods("POST")
 	myRouter.HandleFunc("/products/{id}", returnProductByID).Methods("GET")

@@ -47,7 +47,7 @@ func returnAllProducts(w http.ResponseWriter, r *http.Request) {
 		// else return ALL products in json format
 		fmt.Println("Endpoint Hit: returnAllProducts")
 
-		products = getAllProducts(w, "id", "all")
+		products = getAllProducts(w, "id", "")
 	}
 
 	// encode as json and return
@@ -60,8 +60,7 @@ func returnProductByID(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: returnProductByID")
 
 	// get {id} from URL
-	vars := mux.Vars(r)
-	key := vars["id"]
+	key := mux.Vars(r)["id"]
 
 	product := getSingleProduct(w, "id", key)
 
@@ -87,11 +86,10 @@ func updateProductByID(w http.ResponseWriter, r *http.Request) {
 
 	// check Product exists
 	prodExist := getSingleProduct(w, "id", key)
-	if prodExist != nil {
-		writeProductToDB(w, r)
-
-	} else {
+	if prodExist == nil {
 		returnError(w, http.StatusNotFound, "Update Fail: Product not found")
+	} else {
+		writeProductToDB(w, r)
 	}
 }
 
@@ -127,25 +125,23 @@ func getSingleProduct(w http.ResponseWriter, index, key string) interface{} {
 }
 
 func getAllProducts(w http.ResponseWriter, index, key string) []Product {
-
-	var products []Product
-	var it memdb.ResultIterator
-	var err error
-
 	// Create read-only transaction
 	txn := ProdDB.Txn(false)
 	defer txn.Abort()
 
-	if key == "all" {
+	var it memdb.ResultIterator
+	var err error
+	if key == "" {
 		it, err = txn.Get("product", index)
 	} else {
 		it, err = txn.Get("product", index, key)
 	}
 
 	if err != nil {
-		returnError(w, http.StatusBadRequest, err.Error())
+		returnError(w, http.StatusInternalServerError, err.Error())
 	}
 
+	var products []Product
 	// iterate through the product DB and add ALL objects
 	for obj := it.Next(); obj != nil; obj = it.Next() {
 		p := obj.(*Product)
@@ -172,7 +168,7 @@ func writeProductToDB(w http.ResponseWriter, r *http.Request) {
 	// insert new product in the database
 	for _, p := range product {
 		if err := txn.Insert("product", p); err != nil {
-			returnError(w, http.StatusNotFound, err.Error())
+			returnError(w, http.StatusInternalServerError, err.Error())
 		}
 	}
 

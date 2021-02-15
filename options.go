@@ -23,8 +23,7 @@ func returnOptionsByProductID(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: returnOptionsForProductID")
 
 	// get {id} from URL
-	vars := mux.Vars(r)
-	key := vars["id"]
+	key := mux.Vars(r)["id"]
 
 	// get all the options for product {id}
 	options := getAllOptions(w, "productId", key)
@@ -69,10 +68,10 @@ func updateOption(w http.ResponseWriter, r *http.Request) {
 	// check Option exists
 	option := getSingleOption(w, pkey, okey)
 
-	if option != nil {
-		writeOptionToDB(w, r)
-	} else {
+	if option == nil {
 		returnError(w, http.StatusNotFound, "Update Fail: Product Option Not Found")
+	} else {
+		writeOptionToDB(w, r)
 	}
 }
 
@@ -100,11 +99,11 @@ func getSingleOption(w http.ResponseWriter, pkey, okey string) interface{} {
 	// search for the options for product {id}
 	it, err := txn.Get("option", "productId", pkey)
 	if err != nil {
-		// return 404 error product not found
-		returnError(w, http.StatusNotFound, err.Error())
+		// return DB error
+		returnError(w, http.StatusInternalServerError, err.Error())
 	}
 
-	// iterate through the Options returned and add the option with {optionId}
+	// iterate through the Options returned and retrn the option with {optionId}
 	for obj := it.Next(); obj != nil; obj = it.Next() {
 		o := obj.(*Option)
 		if o.ID == okey {
@@ -117,20 +116,19 @@ func getSingleOption(w http.ResponseWriter, pkey, okey string) interface{} {
 
 func getAllOptions(w http.ResponseWriter, index, key string) []Option {
 
-	var options []Option
-	var it memdb.ResultIterator
-	var err error
-
 	// Create read-only transaction
 	txn := OptDB.Txn(false)
 	defer txn.Abort()
 
+	var it memdb.ResultIterator
+	var err error
 	it, err = txn.Get("option", index, key)
 	if err != nil {
 		returnError(w, http.StatusBadRequest, err.Error())
 	}
 
 	// iterate through the option DB and add ALL options
+	var options []Option
 	for obj := it.Next(); obj != nil; obj = it.Next() {
 		o := obj.(*Option)
 		options = append(options, *o)
@@ -155,7 +153,7 @@ func writeOptionToDB(w http.ResponseWriter, r *http.Request) {
 	// insert new product in the database
 	for _, p := range option {
 		if err := txn.Insert("option", p); err != nil {
-			returnError(w, http.StatusNotFound, err.Error())
+			returnError(w, http.StatusInternalServerError, err.Error())
 		}
 	}
 
