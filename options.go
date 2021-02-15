@@ -12,21 +12,21 @@ import (
 
 // Option contains details
 type Option struct {
-	ID          string `json:"Id"`
+	OptionID    string `json:"OptionId"`
 	ProductID   string `json:"ProductId"`
 	Name        string `json:"Name"`
 	Description string `json:"Description"`
 }
 
-// GET /products/{id}/options - finds all options for a specified product.
+// GET /products/{productId}/options - finds all options for a specified product.
 func returnOptionsByProductID(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: returnOptionsForProductID")
 
-	// get {id} from URL
-	key := mux.Vars(r)["id"]
+	// get {productId} from URL
+	pkey := mux.Vars(r)["productId"]
 
-	// get all the options for product {id}
-	options := getAllOptions(w, "productId", key)
+	// get all the options for product {productId}
+	options := getAllOptions(w, "productId", pkey)
 
 	if options != nil {
 		Encode(w, options)
@@ -35,13 +35,13 @@ func returnOptionsByProductID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GET /products/{id}/options/{optionId} - finds the specified product option for the specified product.
+// GET /products/{productId}/options/{optionId} - finds the specified product option for the specified product.
 func returnOptionForProduct(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: returnOptionForProduct")
 
-	// get {id} from URL
+	// get {productId} from URL
 	vars := mux.Vars(r)
-	pkey := vars["id"]
+	pkey := vars["productId"]
 	okey := vars["optionId"]
 
 	option := getSingleOption(w, pkey, okey)
@@ -53,20 +53,20 @@ func returnOptionForProduct(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// POST /products/{id}/options - adds a new product option to the specified product.
+// POST /products/{productId}/options - adds a new product option to the specified product.
 func createNewOption(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: createNewOption")
 
 	writeOptionToDB(w, r)
 }
 
-// PUT /products/{id}/options/{optionId} - updates the specified product option.
+// PUT /products/{productId}/options/{optionId} - updates the specified product option.
 func updateOption(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: updateOption")
 
-	// get {id} from URL
+	// get {productId} from URL
 	vars := mux.Vars(r)
-	pkey := vars["id"]
+	pkey := vars["productId"]
 	okey := vars["optionId"]
 
 	// check Option exists
@@ -79,13 +79,13 @@ func updateOption(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// DELETE /products/{id}/options/{optionId} - deletes the specified product option.
+// DELETE /products/{productId}/options/{optionId} - deletes the specified product option.
 func deleteOption(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: deleteOption")
 
-	// get {id} from URL
+	// get {productId} from URL
 	vars := mux.Vars(r)
-	pkey := vars["id"]
+	pkey := vars["productId"]
 	okey := vars["optionId"]
 
 	// check Option exists
@@ -100,7 +100,7 @@ func getSingleOption(w http.ResponseWriter, pkey, okey string) interface{} {
 	txn := Database.Txn(false)
 	defer txn.Abort()
 
-	// search for the options for product {id}
+	// search for the options for product {productId}
 	it, err := txn.Get("option", "productId", pkey)
 	if err != nil {
 		// return DB error
@@ -110,7 +110,7 @@ func getSingleOption(w http.ResponseWriter, pkey, okey string) interface{} {
 	// iterate through the Options returned and retrn the option with {optionId}
 	for obj := it.Next(); obj != nil; obj = it.Next() {
 		o := obj.(*Option)
-		if o.ID == okey {
+		if o.OptionID == okey {
 			return *o
 		}
 	}
@@ -148,7 +148,7 @@ func writeOptionToDB(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(reqBody, &opt)
 
 	option := []*Option{
-		{opt.ID, opt.ProductID, opt.Name, opt.Description},
+		{opt.OptionID, opt.ProductID, opt.Name, opt.Description},
 	}
 
 	// Create a write transaction

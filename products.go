@@ -13,7 +13,7 @@ import (
 
 // Product contains details
 type Product struct {
-	ID            string  `json:"Id"`
+	ProductID     string  `json:"ProductId"`
 	Name          string  `json:"Name"`
 	Description   string  `json:"Description"`
 	Price         float32 `json:"Price"`
@@ -60,14 +60,14 @@ func returnAllProducts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GET /products/{id} - gets the product that matches the specified ID - ID is a GUID.
+// GET /products/{productId} - gets the product that matches the specified ID - ID is a GUID.
 func returnProductByID(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: returnProductByID")
 
-	// get {id} from URL
-	key := mux.Vars(r)["id"]
+	// get {productId} from URL
+	pkey := mux.Vars(r)["productId"]
 
-	product := getSingleProduct(w, "id", key)
+	product := getSingleProduct(w, "id", pkey)
 
 	if product != nil {
 		Encode(w, product)
@@ -83,16 +83,16 @@ func createNewProduct(w http.ResponseWriter, r *http.Request) {
 	writeProductToDB(w, r)
 }
 
-// PUT /products/{id} - updates a product.
+// PUT /products/{productId} - updates a product.
 func updateProductByID(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: updateProduct")
 
-	// get {id} from URL
+	// get {productId} from URL
 	vars := mux.Vars(r)
-	key := vars["id"]
+	pkey := vars["productId"]
 
 	// check Product exists
-	prodExist := getSingleProduct(w, "id", key)
+	prodExist := getSingleProduct(w, "id", pkey)
 	if prodExist == nil {
 		returnError(w, http.StatusNotFound, "Update Fail: Product not found")
 	} else {
@@ -100,27 +100,27 @@ func updateProductByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// DELETE /products/{id} - deletes a product and its options.
+// DELETE /products/{productId} - deletes a product and its options.
 func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: deleteProductByID")
 
-	// get {id} from URL
-	key := mux.Vars(r)["id"]
+	// get {productId} from URL
+	pkey := mux.Vars(r)["productId"]
 
 	// find the product to delete
-	product := getSingleProduct(w, "id", key)
+	product := getSingleProduct(w, "id", pkey)
 
 	// delete product
-	deleteProduct(w, product, key)
+	deleteProduct(w, product, pkey)
 }
 
-func getSingleProduct(w http.ResponseWriter, index, key string) interface{} {
+func getSingleProduct(w http.ResponseWriter, index, pkey string) interface{} {
 	// Create read-only transaction
 	txn := Database.Txn(false)
 	defer txn.Abort()
 
-	// search for {id}
-	product, err := txn.First("product", index, key)
+	// search for {productId}
+	product, err := txn.First("product", index, pkey)
 	if err != nil {
 		// return 404 error product not found
 		returnError(w, http.StatusNotFound, err.Error())
@@ -129,17 +129,17 @@ func getSingleProduct(w http.ResponseWriter, index, key string) interface{} {
 	return product
 }
 
-func getAllProducts(w http.ResponseWriter, index, key string) []Product {
+func getAllProducts(w http.ResponseWriter, index, pkey string) []Product {
 	// Create read-only transaction
 	txn := Database.Txn(false)
 	defer txn.Abort()
 
 	var it memdb.ResultIterator
 	var err error
-	if key == "" {
+	if pkey == "" {
 		it, err = txn.Get("product", index)
 	} else {
-		it, err = txn.Get("product", index, key)
+		it, err = txn.Get("product", index, pkey)
 	}
 
 	var products []Product
@@ -164,7 +164,7 @@ func writeProductToDB(w http.ResponseWriter, r *http.Request) {
 	// Unmarshal to create product
 	json.Unmarshal(reqBody, &prod)
 	product := []*Product{
-		{prod.ID, prod.Name, prod.Description, prod.Price, prod.DeliveryPrice},
+		{prod.ProductID, prod.Name, prod.Description, prod.Price, prod.DeliveryPrice},
 	}
 
 	// Create a write transaction
@@ -181,7 +181,7 @@ func writeProductToDB(w http.ResponseWriter, r *http.Request) {
 	txn.Commit()
 }
 
-func deleteProduct(w http.ResponseWriter, product interface{}, key string) {
+func deleteProduct(w http.ResponseWriter, product interface{}, pkey string) {
 	if product != nil {
 		// Create a write transaction
 		txn := Database.Txn(true)
@@ -197,7 +197,7 @@ func deleteProduct(w http.ResponseWriter, product interface{}, key string) {
 		txn.Commit()
 
 		// Get all options for productId
-		options := getAllOptions(w, "productId", key)
+		options := getAllOptions(w, "id", pkey)
 
 		// Delete all options[]
 		for _, opt := range options {

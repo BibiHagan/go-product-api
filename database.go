@@ -15,7 +15,7 @@ func createDatabase() *memdb.MemDB {
 					"id": {
 						Name:    "id",
 						Unique:  true,
-						Indexer: &memdb.StringFieldIndex{Field: "ID"},
+						Indexer: &memdb.StringFieldIndex{Field: "ProductID"},
 					},
 					"name": {
 						Name:    "name",
@@ -45,7 +45,7 @@ func createDatabase() *memdb.MemDB {
 					"id": {
 						Name:    "id",
 						Unique:  true,
-						Indexer: &memdb.StringFieldIndex{Field: "ID"},
+						Indexer: &memdb.StringFieldIndex{Field: "OptionID"},
 					},
 					"productId": {
 						Name:    "productId",

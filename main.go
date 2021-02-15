@@ -25,15 +25,15 @@ func handleRequests() {
 	myRouter := mux.NewRouter()
 	myRouter.HandleFunc("/products", returnAllProducts).Methods("GET")
 	myRouter.HandleFunc("/products", createNewProduct).Methods("POST")
-	myRouter.HandleFunc("/products/{id}", returnProductByID).Methods("GET")
-	myRouter.HandleFunc("/products/{id}", updateProductByID).Methods("PUT")
-	myRouter.HandleFunc("/products/{id}", deleteProductByID).Methods("DELETE")
+	myRouter.HandleFunc("/products/{productId}", returnProductByID).Methods("GET")
+	myRouter.HandleFunc("/products/{productId}", updateProductByID).Methods("PUT")
+	myRouter.HandleFunc("/products/{productId}", deleteProductByID).Methods("DELETE")
 
-	myRouter.HandleFunc("/products/{id}/options", returnOptionsByProductID).Methods("GET")
-	myRouter.HandleFunc("/products/{id}/options", createNewOption).Methods("POST")
-	myRouter.HandleFunc("/products/{id}/options/{optionId}", returnOptionForProduct).Methods("GET")
-	myRouter.HandleFunc("/products/{id}/options/{optionId}", updateOption).Methods("PUT")
-	myRouter.HandleFunc("/products/{id}/options/{optionId}", deleteOption).Methods("DELETE")
+	myRouter.HandleFunc("/products/{productId}/options", returnOptionsByProductID).Methods("GET")
+	myRouter.HandleFunc("/products/{productId}/options", createNewOption).Methods("POST")
+	myRouter.HandleFunc("/products/{productId}/options/{optionId}", returnOptionForProduct).Methods("GET")
+	myRouter.HandleFunc("/products/{productId}/options/{optionId}", updateOption).Methods("PUT")
+	myRouter.HandleFunc("/products/{productId}/options/{optionId}", deleteOption).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }
