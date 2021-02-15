@@ -9,18 +9,14 @@ import (
 	"github.com/hashicorp/go-memdb"
 )
 
-// ProdDB points to the Product Database
-var ProdDB *memdb.MemDB
-
-// OptDB points to the Options Database
-var OptDB *memdb.MemDB
+// Database points to the Product and Option Tables
+var Database *memdb.MemDB
 
 func main() {
 	fmt.Println("Rest API v2.0 - Mux Routers")
 
 	// create DB
-	ProdDB = createProductsDatabase()
-	OptDB = createOptionsDatabase()
+	Database = createDatabase()
 
 	handleRequests()
 }

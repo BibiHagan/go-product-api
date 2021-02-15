@@ -97,7 +97,6 @@ func updateProductByID(w http.ResponseWriter, r *http.Request) {
 func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: deleteProductByID")
 
-	// find Product
 	// get {id} from URL
 	vars := mux.Vars(r)
 	key := vars["id"]
@@ -111,7 +110,7 @@ func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 
 func getSingleProduct(w http.ResponseWriter, index, key string) interface{} {
 	// Create read-only transaction
-	txn := ProdDB.Txn(false)
+	txn := Database.Txn(false)
 	defer txn.Abort()
 
 	// search for {id}
@@ -126,7 +125,7 @@ func getSingleProduct(w http.ResponseWriter, index, key string) interface{} {
 
 func getAllProducts(w http.ResponseWriter, index, key string) []Product {
 	// Create read-only transaction
-	txn := ProdDB.Txn(false)
+	txn := Database.Txn(false)
 	defer txn.Abort()
 
 	var it memdb.ResultIterator
@@ -163,7 +162,7 @@ func writeProductToDB(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a write transaction
-	txn := ProdDB.Txn(true)
+	txn := Database.Txn(true)
 
 	// insert new product in the database
 	for _, p := range product {
@@ -179,7 +178,7 @@ func writeProductToDB(w http.ResponseWriter, r *http.Request) {
 func deleteProduct(w http.ResponseWriter, product interface{}, key string) {
 	if product != nil {
 		// Create a write transaction
-		txn := ProdDB.Txn(true)
+		txn := Database.Txn(true)
 
 		// delete product in the database
 		err := txn.Delete("product", product)

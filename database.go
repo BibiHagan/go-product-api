@@ -6,10 +6,39 @@ import (
 	"github.com/hashicorp/go-memdb"
 )
 
-func createOptionsDatabase() *memdb.MemDB {
-	//create Option Schema
-	optionSchema := &memdb.DBSchema{
+func createDatabase() *memdb.MemDB {
+	DBSchema := &memdb.DBSchema{
 		Tables: map[string]*memdb.TableSchema{
+			"product": {
+				Name: "product",
+				Indexes: map[string]*memdb.IndexSchema{
+					"id": {
+						Name:    "id",
+						Unique:  true,
+						Indexer: &memdb.StringFieldIndex{Field: "ID"},
+					},
+					"name": {
+						Name:    "name",
+						Unique:  false,
+						Indexer: &memdb.StringFieldIndex{Field: "Name"},
+					},
+					"description": {
+						Name:    "description",
+						Unique:  false,
+						Indexer: &memdb.StringFieldIndex{Field: "Description"},
+					},
+					"price": {
+						Name:    "price",
+						Unique:  false,
+						Indexer: &memdb.StringFieldIndex{Field: "Price"},
+					},
+					"deliveryPrice": {
+						Name:    "deliveryPrice",
+						Unique:  false,
+						Indexer: &memdb.StringFieldIndex{Field: "DeliveryPrice"},
+					},
+				},
+			},
 			"option": {
 				Name: "option",
 				Indexes: map[string]*memdb.IndexSchema{
@@ -39,15 +68,26 @@ func createOptionsDatabase() *memdb.MemDB {
 	}
 
 	// Create a new product data base
-	OptDB, err := memdb.NewMemDB(optionSchema)
+	Database, err := memdb.NewMemDB(DBSchema)
 	if err != nil {
 		panic(err)
 	}
 
 	// Create a write transaction
-	txn := OptDB.Txn(true)
+	txn := Database.Txn(true)
 
 	// Insert some products
+	Products := []*Product{
+		{"1", "Croissant", "Buttery french pastry", 123.45, 12.34},
+		{"2", "Crunt", "Croissant meets bundt cake", 678.89, 12.34},
+	}
+	for _, p := range Products {
+		if err := txn.Insert("product", p); err != nil {
+			panic(err)
+		}
+	}
+
+	// Insert some Options
 	Options := []*Option{
 		{"1", "1", "Chocolate Croissant", "Chocolate filled croissant"},
 		{"2", "1", "Savoury Croissant", "Ham & cheese filled Croissane"},
@@ -62,7 +102,7 @@ func createOptionsDatabase() *memdb.MemDB {
 
 	// Commit the transaction
 	txn.Commit()
-	fmt.Println("Option DB created - go-memdb")
+	fmt.Println("DB created - go-memdb")
 
-	return OptDB
+	return Database
 }

@@ -93,7 +93,7 @@ func deleteOption(w http.ResponseWriter, r *http.Request) {
 
 func getSingleOption(w http.ResponseWriter, pkey, okey string) interface{} {
 	// Create read-only transaction
-	txn := OptDB.Txn(false)
+	txn := Database.Txn(false)
 	defer txn.Abort()
 
 	// search for the options for product {id}
@@ -117,7 +117,7 @@ func getSingleOption(w http.ResponseWriter, pkey, okey string) interface{} {
 func getAllOptions(w http.ResponseWriter, index, key string) []Option {
 
 	// Create read-only transaction
-	txn := OptDB.Txn(false)
+	txn := Database.Txn(false)
 	defer txn.Abort()
 
 	var it memdb.ResultIterator
@@ -148,7 +148,7 @@ func writeOptionToDB(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a write transaction
-	txn := OptDB.Txn(true)
+	txn := Database.Txn(true)
 
 	// insert new product in the database
 	for _, p := range option {
@@ -164,7 +164,7 @@ func writeOptionToDB(w http.ResponseWriter, r *http.Request) {
 func deleteOptionFromDB(w http.ResponseWriter, option interface{}) {
 	if option != nil {
 		// Create a write transaction
-		txn := OptDB.Txn(true)
+		txn := Database.Txn(true)
 
 		// delete option in the database
 		err := txn.Delete("option", option)
