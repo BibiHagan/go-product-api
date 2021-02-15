@@ -15,9 +15,9 @@
 | 9 | POST /products/{id}/options               | done |
 | 10 | PUT /products/{id}/options/{optionId}    | done |
 | 11 | DELETE /products/{id}/options/{optionId} | done |
-| 12 | REFACTOR                 | in progress |
-| 13 | Vet Data                 |  |
-|  | Design & Connect Database     |   |
+| 12 | REFACTOR                     | in progress |
+| 13 | Design & Connect Database    |  Done |
+| 14 | Write Tests                  |   |
 
 ## In detail
 ### Set up handler
@@ -95,13 +95,13 @@
     - [ ] Use Postman to Test
     - [ ] Update documentation
 
-### Vet Data
-    - [ ] add checks to make sure all data coming in is valid
-    - [ ] Use Postman to Test
-    - [ ] Update documentation
-
 ### Design & Connect Database
-    - [ ] design and set up database
-    - [ ] connect to API
-    - [ ] Test
+    - [x] design and set up database
+    - [x] connect to API
+    - [x] Use Postman to Test
 
+### Write Tests
+    - [ ] write unit tests
+    - [ ] Use Postman to Test
+    - [ ] run tests
+    - [ ] update documentation

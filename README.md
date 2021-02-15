@@ -23,8 +23,8 @@ These are the endpoints:
   "Id": "01234567-89ab-cdef-0123-456789abcdef",
   "Name": "Product name",
   "Description": "Product description",
-  "Price": 123.45,
-  "DeliveryPrice": 12.34
+  "Price": "123.45",
+  "DeliveryPrice": "12.34"
 }
 ```
 
