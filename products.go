@@ -91,8 +91,8 @@ func updateProductByID(w http.ResponseWriter, r *http.Request) {
 	pkey := mux.Vars(r)["productId"]
 
 	// check Product exists
-	prodExist := getSingleProduct(w, "id", pkey)
-	if prodExist == nil {
+	product := getSingleProduct(w, "id", pkey)
+	if product == nil {
 		returnError(w, http.StatusNotFound, "Update Fail: Product not found")
 	} else {
 		writeProductToDB(w, r)
