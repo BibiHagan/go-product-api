@@ -104,16 +104,15 @@ func getSingleOption(w http.ResponseWriter, pkey, okey string) interface{} {
 		returnError(w, http.StatusNotFound, err.Error())
 	}
 
-	var option []Option
 	// iterate through the Options returned and add the option with {optionId}
 	for obj := it.Next(); obj != nil; obj = it.Next() {
 		o := obj.(*Option)
 		if o.ID == okey {
-			option = append(option, *o)
+			return *o
 		}
 	}
 
-	return option
+	return nil
 }
 
 func getAllOptions(w http.ResponseWriter, index, key string) []Option {
@@ -124,6 +123,7 @@ func getAllOptions(w http.ResponseWriter, index, key string) []Option {
 
 	// Create read-only transaction
 	txn := OptDB.Txn(false)
+	defer txn.Abort()
 
 	it, err = txn.Get("option", index, key)
 	if err != nil {

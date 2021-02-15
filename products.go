@@ -108,37 +108,7 @@ func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 	product := getSingleProduct(w, "id", key)
 
 	// delete product
-	deleteProduct(w, product)
-
-	/* 	// delete all options for productId
-	   	// Create read-only transaction
-	   	txn := OptDB.Txn(false)
-	   	defer txn.Abort()
-
-	   	// get all of the options for product {id}
-	   	it, err := txn.Get("option", "productId", key)
-	   	if err != nil {
-	   		returnError(w, http.StatusBadRequest, err.Error())
-	   	}
-
-	   	// delete Options
-	   	// Create a write transaction
-	   	txn = OptDB.Txn(true)
-
-	   	// iterate through the product DB and delete options
-	   	for obj := it.Next(); obj != nil; obj = it.Next() {
-	   		o := obj.(*Option)
-	   		if o.ProductID == key {
-	   			err = txn.Delete("option", o)
-	   			if err != nil {
-	   				// return 404 error product not found
-	   				returnError(w, http.StatusNotFound, err.Error())
-	   			}
-	   		}
-	   	}
-
-	   	// Commit the transaction
-	   	txn.Commit() */
+	deleteProduct(w, product, key)
 }
 
 func getSingleProduct(w http.ResponseWriter, index, key string) interface{} {
@@ -164,6 +134,7 @@ func getAllProducts(w http.ResponseWriter, index, key string) []Product {
 
 	// Create read-only transaction
 	txn := ProdDB.Txn(false)
+	defer txn.Abort()
 
 	if key == "all" {
 		it, err = txn.Get("product", index)
@@ -209,7 +180,7 @@ func writeProductToDB(w http.ResponseWriter, r *http.Request) {
 	txn.Commit()
 }
 
-func deleteProduct(w http.ResponseWriter, product interface{}) {
+func deleteProduct(w http.ResponseWriter, product interface{}, key string) {
 	if product != nil {
 		// Create a write transaction
 		txn := ProdDB.Txn(true)
@@ -223,6 +194,15 @@ func deleteProduct(w http.ResponseWriter, product interface{}) {
 
 		// Commit the transaction
 		txn.Commit()
+
+		// Get all options for productId
+		options := getAllOptions(w, "productId", key)
+
+		// Delete all options[]
+		for _, opt := range options {
+			deleteOptionFromDB(w, opt)
+		}
+
 	} else {
 		returnError(w, http.StatusNotFound, "Delete Fail: Product not found")
 	}
