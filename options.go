@@ -28,9 +28,11 @@ func returnOptionsByProductID(w http.ResponseWriter, r *http.Request) {
 	// get all the options for product {id}
 	options := getAllOptions(w, "productId", key)
 
-	// encode as json and return
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(options)
+	if options != nil {
+		Encode(w, options)
+	} else {
+		Encode(w, []Option{})
+	}
 }
 
 // GET /products/{id}/options/{optionId} - finds the specified product option for the specified product.
@@ -44,9 +46,11 @@ func returnOptionForProduct(w http.ResponseWriter, r *http.Request) {
 
 	option := getSingleOption(w, pkey, okey)
 
-	// encode as json and return
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(option)
+	if option != nil {
+		Encode(w, option)
+	} else {
+		Encode(w, []Option{})
+	}
 }
 
 // POST /products/{id}/options - adds a new product option to the specified product.

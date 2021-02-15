@@ -39,6 +39,12 @@ func returnAllProducts(w http.ResponseWriter, r *http.Request) {
 		if name != "" {
 			fmt.Println("Endpoint Hit: returnProductByName")
 			products = getAllProducts(w, "name", name)
+			if products == nil {
+				// return error message and 404
+				returnError(w, http.StatusNotFound, "Product Not found")
+			} else {
+				Encode(w, products)
+			}
 		} else {
 			// return error message and 400 bad request
 			returnError(w, http.StatusBadRequest, "Unknown Params")
@@ -48,11 +54,10 @@ func returnAllProducts(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Endpoint Hit: returnAllProducts")
 
 		products = getAllProducts(w, "id", "")
+		if products != nil {
+			Encode(w, products)
+		}
 	}
-
-	// encode as json and return
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(products)
 }
 
 // GET /products/{id} - gets the product that matches the specified ID - ID is a GUID.
@@ -64,9 +69,11 @@ func returnProductByID(w http.ResponseWriter, r *http.Request) {
 
 	product := getSingleProduct(w, "id", key)
 
-	// encode as json and return
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(product)
+	if product != nil {
+		Encode(w, product)
+	} else {
+		Encode(w, []Product{})
+	}
 }
 
 // POST /products - creates a new product.
@@ -98,8 +105,7 @@ func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: deleteProductByID")
 
 	// get {id} from URL
-	vars := mux.Vars(r)
-	key := vars["id"]
+	key := mux.Vars(r)["id"]
 
 	// find the product to delete
 	product := getSingleProduct(w, "id", key)
@@ -136,15 +142,15 @@ func getAllProducts(w http.ResponseWriter, index, key string) []Product {
 		it, err = txn.Get("product", index, key)
 	}
 
-	if err != nil {
-		returnError(w, http.StatusInternalServerError, err.Error())
-	}
-
 	var products []Product
-	// iterate through the product DB and add ALL objects
-	for obj := it.Next(); obj != nil; obj = it.Next() {
-		p := obj.(*Product)
-		products = append(products, *p)
+	if err == nil {
+		// iterate through the product DB and add ALL objects
+		for obj := it.Next(); obj != nil; obj = it.Next() {
+			p := obj.(*Product)
+			products = append(products, *p)
+		}
+	} else {
+		returnError(w, http.StatusInternalServerError, err.Error())
 	}
 
 	return products
