@@ -104,3 +104,10 @@ Results can be viewd in either a browser or in Postman
 Not many tests. I used postman to create my packets and run debugging 
 I chose not to mock http protocols in for testing as I wanted to 
 spend more time on the program itself and the documentation
+
+# How to clean the project
+
+    > go clean
+- usage: go clean [clean flags] [build flags] [packages]
+
+Clean removes object files from package source directories.
