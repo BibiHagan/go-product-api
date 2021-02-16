@@ -94,9 +94,9 @@
     - [x] Update documentation
 
 ### REFACTOR
-    - [ ] convert all slices to maps
-    - [ ] Use Postman to Test
-    - [ ] Update documentation
+    - [x] convert all slices to maps
+    - [x Use Postman to Test
+    - [x] Update documentation
 
 ### Design & Connect Database
     - [x] design and set up database
@@ -106,5 +106,5 @@
 ### Write Tests
     - [-] write unit tests
     - [x] Save Postman events
-    - [ ] run tests
-    - [ ] update documentation
+    - [-] run tests
+    - [x] update documentation
