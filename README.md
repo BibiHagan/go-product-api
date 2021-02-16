@@ -1,6 +1,26 @@
 # go-product-api
 
-These are the endpoints:
+This project requires golang to be installed (see http://golang.org).
+
+Once that's available, extract the zip file or clone the repo (http://github.com/BibiHagan/go-product-api), 
+and run the following from the root of the project folder.
+
+## How to Run
+
+To download dependencies (see go.mod) and start the webserver:
+
+    > go run .
+
+This can also be activated through the Code launch package (see .vscode/launch.json).
+Logs are visible at the command line (or in Code). Responses can be viewed in either a browser or in Postman.
+
+A list of other commands is available via:
+
+    > go help
+
+### Endpoints
+
+I used Postman to create my requests, test and run debugging (see products-api.postman_collection.json).
 
 1. `GET /products` - gets all products.
 2. `GET /products?name={name}` - finds all products matching the specified name.
@@ -8,14 +28,13 @@ These are the endpoints:
 4. `POST /products` - creates a new product.
 5. `PUT /products/{productId}` - updates a product.
 6. `DELETE /products/{productId}` - deletes a product and its options.
-
 7. `GET /products/{productId}/options` - finds all options for a specified product.
 8. `GET /products/{productId}/options/{optionId}` - finds the specified product option for the specified product.
 9. `POST /products/{productId}/options` - adds a new product option to the specified product.
 10. `PUT /products/{productId}/options/{optionId}` - updates the specified product option.
 11. `DELETE /products/{productId}/options/{optionId}` - deletes the specified product option.
 
-## All `Models` should conform to :
+### Request/response Model
 
 **Product:**
 ```json
@@ -62,7 +81,7 @@ These are the endpoints:
 ]
 ```
 
-# Error Handling:
+### Error Model
 
 **Error:**
 ```json
@@ -71,43 +90,3 @@ These are the endpoints:
   "Description": "Bad Request"
 }
 ```
-
-# How to Install
-
-    > go install 
-- usage: go install [-i] [build flags] [packages]
-
-compiles and installs the packages name by the import paths.
-The -i flag installs the dependencies of the named packages as well
-   
-    > go build -i 
-- usage: go build [-o output] [-i] [build flags] [packages]
-
-Build compiles the packages named by the import paths,
-along with their dependencies, but it does not install the results 
-The -i flag installs the packages that are dependencies
-    
-
-# How to Run app
-
-To start the webserver:
-
-    > go run .
-
-This can also be activated through the vscode launch package
-Results can be viewd in either a browser or in Postman
-
-# How to Run tests
-
-    > go test -v
-
-Not many tests. I used postman to create my packets and run debugging 
-I chose not to mock http protocols in for testing as I wanted to 
-spend more time on the program itself and the documentation
-
-# How to clean the project
-
-    > go clean
-- usage: go clean [clean flags] [build flags] [packages]
-
-Clean removes object files from package source directories.
