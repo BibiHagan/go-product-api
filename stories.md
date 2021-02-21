@@ -25,11 +25,13 @@
     - [x] Use Postman to Test
     - [x] Start documentation
 
-### GET /products
+### GET /products?offset={offset}
     - [x] gets all products.
     - [x] Use Postman to Test
-    - [x] Update documentation
     NOTE: productId was left single digit for the ease of testing
+    - [ ] add agination
+     - Include an offset parameter in schema for start of result page
+    - [ ] Update documentation
 
 ### GET /products?name={name}
     - [x] finds all products matching the specified name.

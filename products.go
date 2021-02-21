@@ -126,7 +126,8 @@ func getSingleProduct(w http.ResponseWriter, index, pkey string) interface{} {
 }
 
 // getAllProducts returns a []product of all products in the DB
-func getAllProducts(w http.ResponseWriter, index, pkey string) []Product {
+// Pagination limit is 10
+func getAllProducts(w http.ResponseWriter, index, pkey string, offset int) []Product {
 	// Create read-only transaction
 	txn := Database.Txn(false)
 	defer txn.Abort()
@@ -146,10 +147,18 @@ func getAllProducts(w http.ResponseWriter, index, pkey string) []Product {
 	}
 
 	var products []Product
+	count := offset
+	i := 0
 	// iterate through the product DB and add ALL objects
 	for obj := it.Next(); obj != nil; obj = it.Next() {
-		p := obj.(*Product)
-		products = append(products, *p)
+		if i > count {
+			p := obj.(*Product)
+			products = append(products, *p)
+		}
+		i++
+		if i > count+10 {
+			break
+		}
 	}
 
 	return products
