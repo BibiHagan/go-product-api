@@ -49,7 +49,7 @@ func returnAllProducts(w http.ResponseWriter, r *http.Request) {
 			Encode(w, products)
 		} else {
 			// return error message and 400 bad request
-			returnError(w, http.StatusBadRequest, "Unknown Params")
+			returnError(w, http.StatusBadRequest, "A \"Name\" Parameter is required")
 			return
 		}
 	} else {
